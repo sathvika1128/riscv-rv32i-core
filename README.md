@@ -1,10 +1,6 @@
 # Single-Cycle 32-bit RISC-V (RV32I) Processor Core
 
-[![ISA](https://img.shields.io/badge/ISA-RISC--V_RV32I-blue.svg)](#)
-[![Language](https://img.shields.io/badge/Language-Verilog_HDL-green.svg)](#)
-[![Simulator](https://img.shields.io/badge/Simulator-Xilinx_Vivado_2023.2-orange.svg)](#)
-[![FPGA](https://img.shields.io/badge/Target_FPGA-Xilinx_Artix--7_Basys_3-red.svg)](#)
-[![Verification](https://img.shields.io/badge/Verification-20%2F20_Scoreboard_Passed_(0_Errors)-brightgreen.svg)](#)
+
 
 A synthesizable, single-cycle **32-bit RISC-V processor core** implementing the complete base **RV32I integer instruction set** in Verilog HDL. Designed with a modular Harvard memory architecture, executing one instruction per clock cycle ($\text{CPI} = 1$) with zero pipeline hazards and complete hardware support for all standard formats (**R, I, S, B, U, and J**).
 
@@ -75,9 +71,9 @@ This implementation implements all unprivileged instructions defined in the offi
 | **S-Type** | `SB, SH, SW` | `0100011` | Byte, halfword, and word memory stores into byte-laned RAM banks. |
 | **B-Type** | `BEQ, BNE, BLT, BGE, BLTU, BGEU` | `1100011` | Signed and unsigned conditional branching with PC-relative offsets. |
 | **U-Type** | `LUI` (Load Upper Immediate) | `0110111` | Loads 20-bit immediate into upper bits `[31:12]` of destination register. |
-| **U-Type** | `AUIPC` (Add Upper Immediate to PC) | `0010111` | Computes $\text{PC} + (\text{imm} \ll 12)$ for position-independent code. |
+| **U-Type** | `AUIPC` (Add Upper Immediate to PC) | `0010111` | Computes `PC + (imm << 12)` for position-independent code. |
 | **J-Type** | `JAL` (Jump and Link) | `1101111` | Unconditional PC-relative jump, storing return link address (`PC+4`) in `rd`. |
-| **I-Type** | `JALR` (Jump and Link Register) | `1100111` | Indirect jump to $(\text{rs1} + \text{imm}) \ \& \sim 1$, storing link address in `rd`. |
+| **I-Type** | `JALR` (Jump and Link Register) | `1100111` | Indirect jump to `(rs1 + imm) & ~1`, storing return link address in `rd`. |
 
 > [!NOTE]
 > **Architectural Boundary Note:** As a base unprivileged integer implementation (RV32I), unsupported or reserved opcodes default safely to hardware **NOPs** (`reg_write = 0, mem_write = 0`), preventing unintended state corruption without the multi-cycle silicon overhead of Privileged CSRs and trap vectors.
@@ -116,7 +112,7 @@ The complete processor core was synthesized targeting the **Xilinx Artix-7 FPGA*
 
 In a single-cycle processor, an entire instruction completes within **one clock period ($T_{clk}$)**. The critical path represents the longest combinational propagation delay:
 
-$$T_{clk} \ge T_{\text{PC\_clk\_to\_q}} + T_{\text{IMEM\_access}} + T_{\text{RegFile\_read}} + T_{\text{ALU\_delay}} + T_{\text{DMEM\_access}} + T_{\text{Writeback\_mux}} + T_{\text{RegFile\_setup}}$$
+$$T_{\text{clk}} \ge T_{\text{PC}} + T_{\text{IMEM}} + T_{\text{REG}} + T_{\text{ALU}} + T_{\text{DMEM}} + T_{\text{WB}} + T_{\text{SETUP}}$$
 
 ### Worst-Case Instruction: `LW` (Load Word)
 1. **Instruction Fetch:** Read PC register $\rightarrow$ access instruction ROM.
